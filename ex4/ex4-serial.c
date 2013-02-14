@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include "common.h"
 
 //current code doesn't generate vector, retard. fix it.
 
@@ -18,16 +19,21 @@ int main(int argc, char** argv)
 		return 1;
 	}
 	
-	double sum=1;
+	double sum=0;
+
+	Matrix v = createMatrix(N,1);
 	
-	for (int i=2;i<N+1;++i) {
-		sum += 1.0/(i*i);
+	for (int i=1;i<N+1;++i) {
+		double temp=1.0/(i*i);
+		//v->data[i-1][1] = temp;
+		sum += temp;
 	}
 	
 	double pi=(4.0*atan(1.0));
 	
+	printf("sum: %f\n", sum);
 	printf("difference: %1.16f\n", pi*pi/6.0-sum);
-//	printf("sum: %f\n", sum);
+
 	
 }
 	
