@@ -20,20 +20,20 @@ int main(int argc, char** argv)
 	}
 	
 	double sum=0;
-
-	Matrix v = createMatrix(N,1);
 	
-	for (int i=1;i<N+1;++i) {
+	Matrix v = createMatrix(1,N);
+	
+	for (long int i=1;i<N+1;++i) {
 		double temp=1.0/(i*i);
-		//v->data[i-1][1] = temp;
+		v->data[i-1][1] = temp;
 		sum += temp;
 	}
 	
+	//exact value of pi
 	double pi=(4.0*atan(1.0));
 	
 	printf("sum: %f\n", sum);
 	printf("difference: %1.16f\n", pi*pi/6.0-sum);
-
 	
 }
 	
