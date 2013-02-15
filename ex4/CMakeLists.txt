@@ -53,7 +53,7 @@ ENDMACRO(ADD_APP)
 ADD_APP(ex4-serial ex4-serial.c)
 
 IF(USE_OPENMP)
-
+  ADD_APP(ex4-omp ex4-omp.c)
 ENDIF(USE_OPENMP)
 
 # Generate convenience script

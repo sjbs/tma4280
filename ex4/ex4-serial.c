@@ -3,7 +3,6 @@
 #include <math.h>
 #include "common.h"
 
-//current code doesn't generate vector, retard. fix it.
 
 int main(int argc, char** argv)
 {
@@ -21,11 +20,11 @@ int main(int argc, char** argv)
 	
 	double sum=0;
 	
-	Matrix v = createMatrix(1,N);
+	Vector v = createVector(N);
 	
-	for (long int i=1;i<N+1;++i) {
-		double temp=1.0/(i*i);
-		v->data[i-1][1] = temp;
+	for (long int i=0;i<N;++i) {
+		double temp=1.0/((i+1)*(i+1));
+		v->data[i] = temp;	
 		sum += temp;
 	}
 	
