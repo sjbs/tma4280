@@ -3,6 +3,7 @@
 #include <math.h>
 #include "common.h"
 
+//remember to implement 2^k!
 
 int main(int argc, char** argv)
 {

@@ -11,15 +11,15 @@ int main(int argc, char **argv)
 	MPI_Init (&argc, &argv);
 	MPI_Comm_size (MPI_COMM_WORLD, &nproc);
 	MPI_Comm_rank (MPI_COMM_WORLD, &myid);
-    
+
 	//printf("comm_size is %i \n", nproc);
 	//printf("comm_rank is %i \n", myid);
-    
+
 	//ask about input - arg vs scanf
 	if (myid == 0) {
 		printf (" Enter vector length:\n");
 		scanf ("%i",&n);
-		if (n<=){
+		if (n<=0){
 			printf("need a positive vector length, idiot.");
 			MPI_Finalize();
 			return 1;
@@ -29,14 +29,14 @@ int main(int argc, char **argv)
 	MPI_Bcast (&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
 	
 	sum = 0.0;
-	for (i = myid*n/nproc; i <= (myid+1)*n/nproc; i ++) {
+	for (i = myid; i <= n-1; i += nproc) {
 		double temp=1.0/((double)(i+1)*(double)(i+1));
 		//v->data[i] = temp;	
 		mysum += temp;
 	}
-    
+		
 	MPI_Reduce (&mysum, &sum, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-    
+
 	if (myid == 0) {
 		t2 = MPI_Wtime();
 		pi = 4.0 * atan(1.0);
@@ -49,9 +49,3 @@ int main(int argc, char **argv)
 	return(0);
 }
 
-
-	
-
-  
-	
-	
