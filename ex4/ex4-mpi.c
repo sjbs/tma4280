@@ -6,6 +6,15 @@
 
 int main(int argc, char **argv)
 {
+	if (argc<=1){
+	  printf("touch my wiener\n\n");
+	}
+	int testn=atoi(argv[1]);
+	if (testn<=0){
+	  printf("testn less than zero.\n");
+	  MPI_Finalize;
+	  return 1;
+	}
 	double mysum, sum, x, pi, t1, t2;
 	int n, myid, nproc, i;
 	MPI_Init (&argc, &argv);
