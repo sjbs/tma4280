@@ -51,6 +51,7 @@ ENDMACRO(ADD_APP)
 
 # Add a program consisting of these sources
 ADD_APP(ex4-serial ex4-serial.c)
+ADD_APP(ex4-serial2k ex4-serial2k.c)
 
 IF(USE_OPENMP)
   ADD_APP(ex4-omp ex4-omp.c)
