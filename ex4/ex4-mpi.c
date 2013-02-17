@@ -6,7 +6,7 @@
 
 int main(int argc, char **argv)
 {
-	
+	//ASK ABOUT DEBUG FLAG FOR CMAKE!!
 	double mysum, sum, x, pi, t1, t2;
 	int n, myid, nproc, i;
 	MPI_Init (&argc, &argv);
