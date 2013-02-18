@@ -31,7 +31,7 @@ int main(int argc, char** argv)
 		v->data[i] = 1.0/((double)(i+1)*(double)(i+1));	
 		sum += v->data[i];
 		//if ( ((i+1 != 0) && !(i+1 & (i+1 - 1)))&&i+1>=16){
-		if (i==pow(2,k)){
+		if (i+1==pow(2,k)){
 			printf("difference at i=2^%2.0f: %1.16f\n", log(i)/log(2), pi*pi/6.0-sum);
 			k++;
 		}
