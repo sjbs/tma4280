@@ -6,9 +6,7 @@
 
 int main(int argc, char **argv)
 {
-	//ASK ABOUT DEBUG FLAG FOR CMAKE!!
-	//use -DCMAKE_BUILD_TYPE=RELEASE/DEBUG as cmake option.
-	//flag in code is #if def/ndef NDEBUG
+	
 	double mysum, sum, x, pi, t1, t2;
 	int n, myid, nproc, i;
 	MPI_Init (&argc, &argv);
