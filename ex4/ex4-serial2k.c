@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include "common.h"		//ask about difference between brackets and quotes
+#include "common.h"		
 
 
 int main(int argc, char** argv)
@@ -23,15 +23,17 @@ int main(int argc, char** argv)
 	// }
 	
 	double sum=0;
+	int k=4;
 	
 	Vector v = createVector(N);
 	
 	for (int i=0;i<N;++i) {
-		double temp=1.0/((i+1)*(i+1));
-		v->data[i] = temp;	
-		sum += temp;
-		if ( ((i+1 != 0) && !(i+1 & (i+1 - 1)))&&i+1>=16){
+		v->data[i] = 1.0/((double)(i+1)*(double)(i+1));	
+		sum += v->data[i];
+		//if ( ((i+1 != 0) && !(i+1 & (i+1 - 1)))&&i+1>=16){
+		if (i==pow(2,k)){
 			printf("difference at i=2^%2.0f: %1.16f\n", log(i)/log(2), pi*pi/6.0-sum);
+			k++;
 		}
 	}
 	
