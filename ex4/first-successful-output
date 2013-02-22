@@ -1,0 +1,68 @@
+Permission denied, please try again.
+Permission denied, please try again.
+Permission denied (publickey,gssapi-with-mic,password).
+serial:
+difference at i=2^ 4: 0.0605875334032393
+difference at i=2^ 5: 0.0307668040203022
+difference at i=2^ 6: 0.0155035654393394
+difference at i=2^ 7: 0.0077820618937652
+difference at i=2^ 8: 0.0038986305395463
+difference at i=2^ 9: 0.0019512188931299
+difference at i=2^10: 0.0009760858180610
+difference at i=2^11: 0.0004881620601096
+difference at i=2^12: 0.0002441108250932
+difference at i=2^13: 0.0001220628622214
+difference at i=2^14: 0.0000610332936408
+omp 4 :
+difference at i=2^ 4: 0.0605875334032393
+difference at i=2^ 5: 0.0307668040203020
+difference at i=2^ 6: 0.0155035654393387
+difference at i=2^ 7: 0.0077820618937645
+difference at i=2^ 8: 0.0038986305395459
+difference at i=2^ 9: 0.0019512188931297
+difference at i=2^10: 0.0009760858180621
+difference at i=2^11: 0.0004881620601129
+difference at i=2^12: 0.0002441108251028
+difference at i=2^13: 0.0001220628622225
+difference at i=2^14: 0.0000610332936426
+mpi 4:
+aquired MPI threading level: MPI_THREAD_SINGLE
+difference at i=2^ 4: 0.0605875334032391
+difference at i=2^ 5: 0.0307668040203020
+difference at i=2^ 6: 0.0155035654393387
+difference at i=2^ 7: 0.0077820618937647
+difference at i=2^ 8: 0.0038986305395465
+difference at i=2^ 9: 0.0019512188931301
+difference at i=2^10: 0.0009760858180623
+difference at i=2^11: 0.0004881620601118
+difference at i=2^12: 0.0002441108251010
+difference at i=2^13: 0.0001220628622225
+difference at i=2^14: 0.0000610332936459
+omp 16 :
+difference at i=2^ 4: 0.0605875334032393
+difference at i=2^ 5: 0.0307668040203020
+difference at i=2^ 6: 0.0155035654393387
+difference at i=2^ 7: 0.0077820618937645
+difference at i=2^ 8: 0.0038986305395459
+difference at i=2^ 9: 0.0019512188931297
+difference at i=2^10: 0.0009760858180621
+difference at i=2^11: 0.0004881620601129
+difference at i=2^12: 0.0002441108251028
+difference at i=2^13: 0.0001220628622225
+difference at i=2^14: 0.0000610332936426
+mpi 16:
+aquired MPI threading level: MPI_THREAD_SINGLE
+difference at i=2^ 4: 0.0605875334032393
+difference at i=2^ 5: 0.0307668040203020
+difference at i=2^ 6: 0.0155035654393387
+difference at i=2^ 7: 0.0077820618937645
+difference at i=2^ 8: 0.0038986305395459
+difference at i=2^ 9: 0.0019512188931292
+difference at i=2^10: 0.0009760858180619
+difference at i=2^11: 0.0004881620601129
+difference at i=2^12: 0.0002441108251028
+difference at i=2^13: 0.0001220628622247
+difference at i=2^14: 0.0000610332936473
+Permission denied, please try again.
+Permission denied, please try again.
+Permission denied (publickey,gssapi-with-mic,password).
