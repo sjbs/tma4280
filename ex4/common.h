@@ -1,9 +1,15 @@
 #pragma once
 
-#ifndef HAVE_MKL
+#ifndef USE_MKL
   #define ddot ddot_
   #define dgemv dgemv_
   #define dgemm dgemm_
+#endif
+
+#ifdef HAVE_MPI
+#include <mpi.h>
+extern MPI_Comm WorldComm;
+extern MPI_Comm SelfComm;
 #endif
 
 // blas prototypes
@@ -15,67 +21,80 @@ void dgemm(char* transA, char* transB, int* M, int* N, int* K, double* alpha,
            double* A, int* LDA, double* B, int* LDB,
            double* beta, double* C, int* LDC);
 
-//! \brief A struct representing a vector
 typedef struct {
-  double* data; //!< Array with data
-  int len;      //!< The length of the vector
-  int stride;   //!< The stride (distance) between vector elements
+  double* data;
+  int len;
+  int stride;
+  int globLen;
+#ifdef HAVE_MPI
+  MPI_Comm* comm;
+#endif
+  int comm_size;
+  int comm_rank;
+  int* displ;
+  int* sizes;
 } vector_t;
 
-typedef vector_t* Vector; //!< Convenience type definition
+typedef vector_t* Vector;
 
-//! \brief A struct representing a matrix
 typedef struct {
-  double** data; //!< Array with data
-  Vector as_vec; //!< A vector spanning the whole matrix.
-  Vector* col;   //!< Column vectors pointing into the data array
-  Vector* row;   //!< Row vectors pointing into the data array
-  int rows;      //!< Number of rows in matrix
-  int cols;      //!< Number of columns in matrix
+  double** data;
+  Vector as_vec;
+  Vector* col;
+  Vector* row;
+  int rows;
+  int cols;
+  int glob_rows;
+  int glob_cols;
 } matrix_t;
 
-typedef matrix_t* Matrix; //!< Convenience type defintion
+typedef matrix_t* Matrix;
 
-//! \brief Create a vector
-//! \param[in] len The length of the vector
-//! \returns A vector with the requested length
+void init_app(int argc, char** argv, int* rank, int* size);
+void close_app();
+
+int get_thread();
+int num_threads();
+int max_threads();
+
+void splitVector(int globLen, int size, int** len, int** displ);
 Vector createVector(int len);
+#ifdef HAVE_MPI
+Vector createVectorMPI(int globLen, int allocdata, MPI_Comm* comm);
+#endif
+Matrix subMatrix(const Matrix A, int r_ofs, int r, int c_ofs, int c);
 
-//! \brief Free up memory allocated to a vector
 void freeVector(Vector vec);
 
-//! \brief Allocate a n1xn2 matrix in fortran format
-//! \param[in] n1 The number of rows
-//! \param[in] n2 The number of columns
-//! \details Matrix is allocated in Fortran format, so reversed indices must be used
+// allocate a n1xn2 matrix in fortran format
+// note that reversed index order is assumed
 Matrix createMatrix(int n1, int n2);
 
-//! \brief Free up memory allocated to a matrix
+Matrix createMatrixMPI(int n1, int n2, int N1, int N2, MPI_Comm* comm);
+
 void freeMatrix(Matrix A);
 
-//! \brief Performs the matrix-vector product u = Av
-//! \param[out] u Vector to store the result in
-//! \param[in] A The matrix
-//! \param[in] v The vector to apply the matrix to
-void MxV(Vector u, const Matrix A, const Vector v);
+// perform a matrix-vector product
+void MxV(Vector u, Matrix A, Vector v);
 
-//! \brief Performs the matrix-matrix product C = alpha*A*B + beta*C
-void MxM(const Matrix A, const Matrix B, Matrix C, double alpha, double beta);
+// perform a matrix-matrix product
+void MxM(Matrix A, Matrix B, Matrix C, double alpha, double beta);
 
-//! \brief Performs the matrix-matrix product C = alpha*A*B + beta*C for a subblock of B
-//! \param[in] A The A matrix
-//! \param[in] B The B matrix
-//! \param[out] C The C matrix
-//! \param[in] b_ofs The starting column of the subblock of B
-//! \param[in] b_cols The number of columns in the subblock of B
-void MxM2(const Matrix A, const Matrix B, Matrix C, int b_ofs, int b_col,
-          double alpha, double beta);
+// perform a matrix-matrix product
+void MxM2(Matrix A, Matrix B, Matrix C, int b_ofs, int b_col,
+          int c_ofs, double alpha, double beta);
 
-//! \brief Performs a inner product u'*v
-//! \param[in] u The u vector
-//! \param[in] v The v vector
-//! \returns The value of the inner product
-double innerproduct(const Vector u, const Vector v);
+// perform an innerproduct
+double innerproduct(Vector u, Vector);
 
-//! \brief Get current wall-clock time
+// perform an innerproduct v2
+double innerproduct2(Vector u, int ofs, int len, Vector);
+
+// get current time in msecs
 double WallTime();
+
+// io
+void saveVectorSerial(char* name, Vector data);
+void saveMatrixSerial(char* name, Matrix data);
+
+void saveVectorMPI(char* name, Vector data);

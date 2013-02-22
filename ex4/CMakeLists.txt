@@ -1,5 +1,5 @@
 # Name of our project
-PROJECT(ex4)
+PROJECT(MPISum)
 
 # Tell cmake which version we require - 2.6 is enough for us
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
@@ -18,15 +18,19 @@ ELSE(HAVE_C99)
 ENDIF(HAVE_C99)
 
 OPTION(USE_OPENMP "Use OpenMP?" ON)
+OPTION(USE_MPI "Use MPI?" ON)
 
 # We want OpenMP
 IF(USE_OPENMP)
   FIND_PACKAGE(OpenMP)
 ENDIF(USE_OPENMP)
+IF(USE_MPI)
+  FIND_PACKAGE(MPI)
+ENDIF(USE_MPI)
 IF(CMAKE_COMPILER_IS_GNUCC)
   FIND_PACKAGE(BLAS REQUIRED)
   SET(DEPLIBS ${DEPLIBS} ${BLAS_LIBRARIES})
- ELSE(CMAKE_COMPILER_IS_GNUCC)
+ELSE(CMAKE_COMPILER_IS_GNUCC)
   SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mkl=sequential -DHAVE_MKL")
   SET(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -mkl=sequential")
 ENDIF(CMAKE_COMPILER_IS_GNUCC)
@@ -35,6 +39,11 @@ SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
 IF(OPENMP_FOUND)
   SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DHAVE_OPENMP=1")
 ENDIF(OPENMP_FOUND)
+IF(MPI_FOUND)
+  SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DHAVE_MPI=1")
+  SET(INCLUDES ${INCLUDES} ${MPI_INCLUDE_PATH})
+  SET(DEPLIBS ${DEPLIBS} ${MPI_C_LIBRARIES})
+ENDIF(MPI_FOUND)
 
 # Send the include directories to the compiler
 INCLUDE_DIRECTORIES(${INCLUDES})
@@ -50,12 +59,13 @@ MACRO(ADD_APP APP SOURCES)
 ENDMACRO(ADD_APP)
 
 # Add a program consisting of these sources
-ADD_APP(ex4-serial ex4-serial.c)
-ADD_APP(ex4-serial2k ex4-serial2k.c)
+ADD_APP(serial2k ex4-serial2k.c)
+ADD_APP(mpi-splitv ex4-mpisplit.c)
 
-IF(USE_OPENMP)
-  ADD_APP(ex4-omp ex4-omp.c)
-ENDIF(USE_OPENMP)
+
+IF(OPENMP_FOUND)
+  ADD_APP(omp2k ex4-omp2k.c)
+ENDIF(OPENMP_FOUND)
 
 # Generate convenience script
 #CONFIGURE_FILE(runall.sh.in runall.sh @ONLY)
