@@ -6,6 +6,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
 # We use the C language
 ENABLE_LANGUAGE(C)
+ENABLE_LANGUAGE(CXX)
 
 # We want C99
 INCLUDE(CheckCCompilerFlag)
@@ -60,7 +61,7 @@ ENDMACRO(ADD_APP)
 
 # Add a program consisting of these sources
 ADD_APP(serial2k ex4-serial2k.c)
-#ADD_APP(mpi-splitv ex4-mpisplit.c)
+ADD_APP(mpi-splitv ex4-mpisplit.c)
 
 
 IF(OPENMP_FOUND)
