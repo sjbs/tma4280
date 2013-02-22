@@ -1,0 +1,18 @@
+#!/bin/bash
+
+#PBS -N test
+#PBS -Inodes=1:ppn=12:default
+#PBS -Iwallime=00:01:00
+#PBS -A freecycle
+#PBS -q optimist
+#PBS -j oe
+
+cd /home/spence/tmacode-checkout/ex4/release
+
+module load intelcomp
+module load openmp/1.4.3-intel
+KMP_AFFINITY="granularity=fine, compact"
+echo "serial:\n"
+./serial2k
+
+
