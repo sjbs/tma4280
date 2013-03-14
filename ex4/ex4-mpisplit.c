@@ -1,9 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-
 #include "common.h"
-
 
 int main(int argc, char** argv)
 {
@@ -26,7 +24,6 @@ int main(int argc, char** argv)
 
   //maximum size of vector - 2^14 for Exercise 4
   int maxN = pow(2,14);
-  //int maxN=3;
     
   //initialize some variables
   double mysum = 0;
@@ -46,7 +43,7 @@ int main(int argc, char** argv)
     v->data[i] = 1.0/pow((double)(i*size+1+rank),2);
     mysum += v->data[i];
   
-  //print out difference at every 2^K n
+	//print out difference at every 2^K n
     if (i+1==nextN){
       MPI_Reduce (&mysum, &sum, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
       if (rank == 0) {
@@ -64,6 +61,5 @@ int main(int argc, char** argv)
   free(cols);
   free(ofs);
   close_app();
-  
   return 0;
 }
