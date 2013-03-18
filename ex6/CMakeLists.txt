@@ -11,4 +11,4 @@ ENABLE_LANGUAGE(Fortran)
 ADD_EXECUTABLE(poisson poisson.c fst.f)
 SET_TARGET_PROPERTIES(poisson PROPERTIES LINKER_LANGUAGE C)
 
-ADD_EXECUTABLE(poisson_f poisson.f fst.f)
+#ADD_EXECUTABLE(poisson_f poisson.f fst.f)
