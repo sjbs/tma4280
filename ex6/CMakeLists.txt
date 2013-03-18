@@ -2,13 +2,55 @@ PROJECT(poisson)
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
-# comment if you only going to write fortran code
+# We use the C language
 ENABLE_LANGUAGE(C)
-
-# needed no matter since the fst is written in fortran
 ENABLE_LANGUAGE(Fortran)
 
-ADD_EXECUTABLE(poisson poisson.c fst.f)
-SET_TARGET_PROPERTIES(poisson PROPERTIES LINKER_LANGUAGE C)
+# We want C99
+INCLUDE(CheckCCompilerFlag)
+CHECK_C_COMPILER_FLAG("-std=c99" HAVE_C99)
 
-#ADD_EXECUTABLE(poisson_f poisson.f fst.f)
+IF (HAVE_C99)
+  SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
+ELSE(HAVE_C99)
+  MESSAGE(WARNING "C99 support not available, program may fail to compile!")
+ENDIF(HAVE_C99)
+
+OPTION(USE_MPI "Use MPI?" ON)
+
+IF(USE_MPI)
+  FIND_PACKAGE(MPI)
+ENDIF(USE_MPI)
+IF(CMAKE_COMPILER_IS_GNUCC)
+  FIND_PACKAGE(LAPACK REQUIRED)
+  SET(DEPLIBS ${DEPLIBS} ${LAPACK_LIBRARIES})
+ELSE(CMAKE_COMPILER_IS_GNUCC)
+  SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mkl=sequential -DHAVE_MKL")
+  SET(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -mkl=sequential")
+ENDIF(CMAKE_COMPILER_IS_GNUCC)
+
+IF(MPI_FOUND)
+  SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DHAVE_MPI=1")
+  SET(INCLUDES ${INCLUDES} ${MPI_INCLUDE_PATH})
+  SET(DEPLIBS ${DEPLIBS} ${MPI_C_LIBRARIES})
+ENDIF(MPI_FOUND)
+
+# Send the include directories to the compiler
+INCLUDE_DIRECTORIES(${INCLUDES})
+
+# Add a library with common sources
+ADD_LIBRARY(common fst.f)
+
+MACRO(ADD_APP APP)
+  ADD_EXECUTABLE(${APP} ${APP}.c)
+  TARGET_LINK_LIBRARIES(${APP} common ${DEPLIBS})
+  SET_TARGET_PROPERTIES(${APP} PROPERTIES LINKER_LANGUAGE C)
+  SET(all-bin "${all-bin} ${APP}")
+ENDMACRO(ADD_APP)
+
+ADD_APP(poisson)
+
+IF(MPI_FOUND)
+  ADD_APP(mpi-poisson)
+ENDIF()
+

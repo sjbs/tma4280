@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <memory.h>
 #include <math.h>
+#include <mpi.h>
 
 typedef double Real;
 
@@ -26,6 +27,12 @@ void fstinv_(Real *v, int *n, Real *w, int *nn);
 
 main(int argc, char **argv )
 {
+  int myid, nproc, mglob;
+  MPI_Init (&argc, &argv);
+  MPI_Comm_size (MPI_COMM_WORLD, &nproc);
+  MPI_Comm_rank (MPI_COMM_WORLD, &myid);
+
+
   Real *diag, **b, **bt, *z;
   Real pi, h, umax;
   int i, j, n, m, nn;
@@ -34,14 +41,21 @@ main(int argc, char **argv )
   /* the total number of degrees-of-freedom in each spatial direction is (n-1) */
   /* this version requires n to be a power of 2 */
 
+  
+
   if( argc < 2 ) {
+    if (myid==0){
     printf("need a problem size\n");
-	return;
+    }
+    MPI_Finalize();
+	  return(0);
   }
 
   n  = atoi(argv[1]);
-  m  = n-1;
+  mglob = n-1;
   nn = 4*n;
+
+  m=mglob/nproc;
 
   diag = createRealArray (m);
   b    = createReal2DArray (m,m);
@@ -52,10 +66,10 @@ main(int argc, char **argv )
   pi   = 4.*atan(1.);
 
   for (i=0; i < m; i++) {
-    diag[i] = 2.*(1.-cos((i+1)*pi/(Real)n));
+    diag[i] = 2.*(1.-cos((i+1)*(myid+1)*pi/(Real)n));
   }
   for (j=0; j < m; j++) {
-    for (i=0; i < m; i++) {
+    for (i=0; i < mglob; i++) {
       b[j][i] = h*h;
     }
   }
@@ -63,35 +77,37 @@ main(int argc, char **argv )
     fst_(b[j], &n, z, &nn);
   }
 
-  transpose (bt,b,m);
+  // transpose (bt,b,m);
 
-  for (i=0; i < m; i++) {
-    fstinv_(bt[i], &n, z, &nn);
-  }
+  // for (i=0; i < m; i++) {
+  //   fstinv_(bt[i], &n, z, &nn);
+  // }
   
-  for (j=0; j < m; j++) {
-    for (i=0; i < m; i++) {
-      bt[j][i] = bt[j][i]/(diag[i]+diag[j]);
-    }
-  }
+  // for (j=0; j < m; j++) {
+  //   for (i=0; i < m; i++) {
+  //     bt[j][i] = bt[j][i]/(diag[i]+diag[j]);
+  //   }
+  // }
   
-  for (i=0; i < m; i++) {
-    fst_(bt[i], &n, z, &nn);
-  }
+  // for (i=0; i < m; i++) {
+  //   fst_(bt[i], &n, z, &nn);
+  // }
 
-  transpose (b,bt,m);
+  // transpose (b,bt,m);
 
-  for (j=0; j < m; j++) {
-    fstinv_(b[j], &n, z, &nn);
-  }
+  // for (j=0; j < m; j++) {
+  //   fstinv_(b[j], &n, z, &nn);
+  // }
 
-  umax = 0.0;
-  for (j=0; j < m; j++) {
-    for (i=0; i < m; i++) {
-      if (b[j][i] > umax) umax = b[j][i];
-    }
-  }
-  printf (" umax = %e \n",umax);
+  // umax = 0.0;
+  // for (j=0; j < m; j++) {
+  //   for (i=0; i < m; i++) {
+  //     if (b[j][i] > umax) umax = b[j][i];
+  //   }
+  // }
+  // printf (" umax = %e \n",umax);
+
+  MPI_Finalize();
 }
 
 void transpose (Real **bt, Real **b, int m)
