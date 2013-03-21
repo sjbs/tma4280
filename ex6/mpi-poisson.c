@@ -6,6 +6,9 @@
   einar m. ronquist
   ntnu, october 2000
   revised, october 2001
+
+  revised to parallel version by Silas Spence
+  March 2013
 */
 
 #include <stddef.h>
@@ -14,6 +17,7 @@
 #include <memory.h>
 #include <math.h>
 #include <mpi.h>
+#include <omp.h>
 
 typedef double Real;
 
@@ -23,14 +27,15 @@ Real **createReal2DArray (int m, int n);
 void transpose (Real **bt, Real **b, int m);
 void fst_(Real *v, int *n, Real *w, int *nn);
 void fstinv_(Real *v, int *n, Real *w, int *nn);
-
+void splitVector(int globLen, int size, int** len, int** displ);
 
 main(int argc, char **argv )
 {
-  int myid, nproc, mglob;
+  int rank, size, mglob, *ofs, *cols;
+  
   MPI_Init (&argc, &argv);
-  MPI_Comm_size (MPI_COMM_WORLD, &nproc);
-  MPI_Comm_rank (MPI_COMM_WORLD, &myid);
+  MPI_Comm_size (MPI_COMM_WORLD, &size);
+  MPI_Comm_rank (MPI_COMM_WORLD, &rank);
 
 
   Real *diag, **b, **bt, *z;
@@ -41,10 +46,9 @@ main(int argc, char **argv )
   /* the total number of degrees-of-freedom in each spatial direction is (n-1) */
   /* this version requires n to be a power of 2 */
 
-  
 
   if( argc < 2 ) {
-    if (myid==0){
+    if (rank==0){
     printf("need a problem size\n");
     }
     MPI_Finalize();
@@ -53,31 +57,43 @@ main(int argc, char **argv )
 
   n  = atoi(argv[1]);
   mglob = n-1;
-  nn = 4*n;
+  //nn = 4*n;
 
-  m=mglob/nproc;
+  splitVector(n-1, size, &cols, &ofs);
 
-  diag = createRealArray (m);
-  b    = createReal2DArray (m,m);
-  bt   = createReal2DArray (m,m);
+  m=cols[rank];
+  int nlocal = m+1;
+  nn=4*nlocal;
+
+  //printf("%i\n",ofs[rank]);
+
+  diag = createRealArray (mglob);
+  b    = createReal2DArray (mglob,m);
+  bt   = createReal2DArray (mglob,m);
   z    = createRealArray (nn);
 
   h    = 1./(Real)n;
   pi   = 4.*atan(1.);
 
-  for (i=0; i < m; i++) {
-    diag[i] = 2.*(1.-cos((i+1)*(myid+1)*pi/(Real)n));
+  // for (i=0; i < m; i++) {
+  //   diag[i] = 2.*(1.-cos((i+1+ofs[rank])*pi/(Real)n));
+  //   //diag[i]=i+ofs[rank];
+  //   //printf("diag[%i]=%i\n",rank,i+ofs[rank]); 
+  //   printf("%2.4f\n",diag[i]);
+  // }
+  for (i=0; i < mglob; i++) {
+    diag[i] = 2.*(1.-cos((i+1)*pi/(Real)n));
   }
-  for (j=0; j < m; j++) {
-    for (i=0; i < mglob; i++) {
+  for (j=0; j < mglob; j++) {
+    for (i=0; i < m; i++) {
       b[j][i] = h*h;
     }
   }
-  for (j=0; j < m; j++) {
-    fst_(b[j], &n, z, &nn);
-  }
+   for (j=0; j < m; j++) {
+     fst_(b[j], &nlocal, z, &nn);
+   }
 
-  // transpose (bt,b,m);
+   transpose (bt,b,m,mglob);
 
   // for (i=0; i < m; i++) {
   //   fstinv_(bt[i], &n, z, &nn);
@@ -110,14 +126,12 @@ main(int argc, char **argv )
   MPI_Finalize();
 }
 
-void transpose (Real **bt, Real **b, int m)
+void transpose (Real **bt, Real **b, int m, int mglob)
 {
-  int i, j;
+  sendbuff sendbuf, recbuf;
   for (j=0; j < m; j++) {
-    for (i=0; i < m; i++) {
-      bt[j][i] = b[i][j];
-    }
-  }
+     sendbuf[j], &nlocal, z, &nn);
+   } 
 }
 
 Real *createRealArray (int n)
@@ -143,4 +157,17 @@ Real **createReal2DArray (int n1, int n2)
   n = n1*n2;
   memset(a[0],0,n*sizeof(Real));
   return (a);
+}
+
+void splitVector(int globLen, int size, int** len, int** displ)
+{
+  *len = calloc(size,sizeof(int));
+  *displ = calloc(size,sizeof(int));
+  for (int i=0;i<size;++i) {
+    (*len)[i] = globLen/size;
+    if (globLen % size && i >= (size - globLen % size))
+      (*len)[i]++;
+    if (i < size-1)
+      (*displ)[i+1] = (*displ)[i]+(*len)[i];
+  }
 }
