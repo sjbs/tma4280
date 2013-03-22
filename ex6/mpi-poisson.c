@@ -23,22 +23,24 @@ typedef double Real;
 
 /* function prototypes */
 Real *createRealArray (int n);
+int *createIntArray (int n);
 Real **createReal2DArray (int m, int n);
-void transpose (Real **bt, Real **b, int m);
+void transpose (Real **bt, Real **b, int m, int mglob, Real *sendbuf, 
+    Real *recbuf, int *sendcnt, int *sdispl);
 void fst_(Real *v, int *n, Real *w, int *nn);
 void fstinv_(Real *v, int *n, Real *w, int *nn);
 void splitVector(int globLen, int size, int** len, int** displ);
 
 main(int argc, char **argv )
 {
-  int rank, size, mglob, *ofs, *cols;
+  int rank, size, mglob, *ofs, *cols, *sendcnt, *sdispl;
   
   MPI_Init (&argc, &argv);
   MPI_Comm_size (MPI_COMM_WORLD, &size);
   MPI_Comm_rank (MPI_COMM_WORLD, &rank);
 
 
-  Real *diag, **b, **bt, *z;
+  Real *diag, **b, **bt, *z, *sendbuf, *recbuf;
   Real pi, h, umax;
   int i, j, n, m, nn;
 
@@ -57,13 +59,13 @@ main(int argc, char **argv )
 
   n  = atoi(argv[1]);
   mglob = n-1;
-  //nn = 4*n;
+  nn = 4*n;
 
   splitVector(n-1, size, &cols, &ofs);
 
   m=cols[rank];
   int nlocal = m+1;
-  nn=4*nlocal;
+  //nn=4*nlocal;
 
   //printf("%i\n",ofs[rank]);
 
@@ -71,6 +73,18 @@ main(int argc, char **argv )
   b    = createReal2DArray (mglob,m);
   bt   = createReal2DArray (mglob,m);
   z    = createRealArray (nn);
+  sendbuf = createRealArray (nlocal);
+  recbuf  = createRealArray (nlocal);
+  sendcnt = createIntArray (size);
+  sdispl  = createIntArray (size);
+
+  for (i=0; i<size; i++){
+    sendcnt[i]=cols[rank]*cols[i];
+  }
+  sdispl[0]=0;
+  for (i=1; i<size; i++){
+    sdispl[i]+=sendcnt[i-1];
+  }
 
   h    = 1./(Real)n;
   pi   = 4.*atan(1.);
@@ -86,22 +100,25 @@ main(int argc, char **argv )
   }
   for (j=0; j < mglob; j++) {
     for (i=0; i < m; i++) {
-      b[j][i] = h*h;
+      b[j][i] = i*j;
+     // if (rank==1) printf("b[%i][%i]=%i\t",j,i,j*i);
     }
+   // if (rank==1) printf("\n");
   }
-   for (j=0; j < m; j++) {
-     fst_(b[j], &nlocal, z, &nn);
-   }
+  
+  for (j=0; j < m; j++) {
+    fst_(b[j], &n, z, &nn);
+  }
 
-   transpose (bt,b,m,mglob);
+  transpose (bt,b,m,mglob,sendbuf,recbuf,sendcnt,sdispl);
 
   // for (i=0; i < m; i++) {
-  //   fstinv_(bt[i], &n, z, &nn);
+  //  fstinv_(bt[i], &n, z, &nn);
   // }
   
-  // for (j=0; j < m; j++) {
-  //   for (i=0; i < m; i++) {
-  //     bt[j][i] = bt[j][i]/(diag[i]+diag[j]);
+  // for (j=0; j < mglob; j++) {
+  //  for (i=0; i < m; i++) {
+  //    bt[j][i] = bt[j][i]/(diag[i]+diag[j]);
   //   }
   // }
   
@@ -109,14 +126,14 @@ main(int argc, char **argv )
   //   fst_(bt[i], &n, z, &nn);
   // }
 
-  // transpose (b,bt,m);
+  // transpose (bt,b,m,mglob,sendbuf,recbuf,sendcnt,sdispl);
 
   // for (j=0; j < m; j++) {
   //   fstinv_(b[j], &n, z, &nn);
   // }
 
   // umax = 0.0;
-  // for (j=0; j < m; j++) {
+  // for (j=0; j < mglob; j++) {
   //   for (i=0; i < m; i++) {
   //     if (b[j][i] > umax) umax = b[j][i];
   //   }
@@ -126,12 +143,21 @@ main(int argc, char **argv )
   MPI_Finalize();
 }
 
-void transpose (Real **bt, Real **b, int m, int mglob)
+void transpose (Real **bt, Real **b, int m, int mglob, Real *sendbuf,
+  Real *recbuf,int *sendcnt, int *sdispl)
 {
-  sendbuff sendbuf, recbuf;
-  for (j=0; j < m; j++) {
-     sendbuf[j], &nlocal, z, &nn);
-   } 
+  for (int j=0; j < mglob; j++) {
+    for (int i=0; i < m; i++) {
+      int ind=j+1;
+      sendbuf[ind]=b[j][i];
+      //printf("%f\t",sendbuf[ind]);
+    }
+  }
+  //printf("\n");
+  MPI_Alltoallv(sendbuf, sendcnt, sdispl,MPI_DOUBLE,
+     recbuf, sendcnt, sdispl,MPI_DOUBLE,MPI_COMM_WORLD);
+
+
 }
 
 Real *createRealArray (int n)
@@ -141,6 +167,17 @@ Real *createRealArray (int n)
   a = (Real *)malloc(n*sizeof(Real));
   for (i=0; i < n; i++) {
     a[i] = 0.0;
+  }
+  return (a);
+}
+
+int *createIntArray (int n)
+{
+  int *a;
+  int i;
+  a = (int *)malloc(n*sizeof(int));
+  for (i=0; i < n; i++) {
+    a[i] = 0;
   }
   return (a);
 }

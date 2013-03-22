@@ -56,13 +56,13 @@ main(int argc, char **argv )
   }
   for (j=0; j < m; j++) {
     for (i=0; i < m; i++) {
-      b[j][i] = h*h;
+      b[j][i] = i*j;
     }
   }
   for (j=0; j < m; j++) {
     fst_(b[j], &n, z, &nn);
   }
-
+  
   transpose (bt,b,m);
 
   for (i=0; i < m; i++) {
@@ -77,8 +77,9 @@ main(int argc, char **argv )
   
   for (i=0; i < m; i++) {
     fst_(bt[i], &n, z, &nn);
+    
   }
-
+  
   transpose (b,bt,m);
 
   for (j=0; j < m; j++) {
