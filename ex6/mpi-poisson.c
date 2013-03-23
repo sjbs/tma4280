@@ -26,12 +26,12 @@ Real *createRealArray (int n);
 int *createIntArray (int n);
 Real **createReal2DArray (int m, int n);
 void transpose (Real **bt, Real **b, int m, int mglob, Real *sendbuf, 
-    Real *recbuf, int *sendcnt, int *sdispl);
+    Real *recbuf, int *sendcnt, int *sdispl,int rank);
 void fst_(Real *v, int *n, Real *w, int *nn);
 void fstinv_(Real *v, int *n, Real *w, int *nn);
 void splitVector(int globLen, int size, int** len, int** displ);
 
-main(int argc, char **argv )
+int main(int argc, char **argv )
 {
   int rank, size, mglob, *ofs, *cols, *sendcnt, *sdispl;
   
@@ -64,7 +64,8 @@ main(int argc, char **argv )
   splitVector(n-1, size, &cols, &ofs);
 
   m=cols[rank];
-  int nlocal = m+1;
+  int localdof = m*mglob;
+  printf("localdof[%i]=%i\n",rank,localdof);
   //nn=4*nlocal;
 
   //printf("%i\n",ofs[rank]);
@@ -73,44 +74,43 @@ main(int argc, char **argv )
   b    = createReal2DArray (mglob,m);
   bt   = createReal2DArray (mglob,m);
   z    = createRealArray (nn);
-  sendbuf = createRealArray (nlocal);
-  recbuf  = createRealArray (nlocal);
+  sendbuf = createRealArray (localdof);
+  recbuf  = createRealArray (localdof);
   sendcnt = createIntArray (size);
   sdispl  = createIntArray (size);
 
   for (i=0; i<size; i++){
     sendcnt[i]=cols[rank]*cols[i];
+    if (rank==1) printf("sendcnt=%i  ",sendcnt[i]);
   }
+  if (rank==1) printf("\n");
+
   sdispl[0]=0;
   for (i=1; i<size; i++){
-    sdispl[i]+=sendcnt[i-1];
+    sdispl[i]=sdispl[i-1]+sendcnt[i-1];
+    if (rank==1) printf("sdispl=%i  ",sdispl[i]);
   }
-
+  if (rank==1) printf("\n");
+  
   h    = 1./(Real)n;
   pi   = 4.*atan(1.);
 
-  // for (i=0; i < m; i++) {
-  //   diag[i] = 2.*(1.-cos((i+1+ofs[rank])*pi/(Real)n));
-  //   //diag[i]=i+ofs[rank];
-  //   //printf("diag[%i]=%i\n",rank,i+ofs[rank]); 
-  //   printf("%2.4f\n",diag[i]);
-  // }
   for (i=0; i < mglob; i++) {
     diag[i] = 2.*(1.-cos((i+1)*pi/(Real)n));
   }
   for (j=0; j < mglob; j++) {
     for (i=0; i < m; i++) {
-      b[j][i] = i*j;
-     // if (rank==1) printf("b[%i][%i]=%i\t",j,i,j*i);
+      b[j][i] = (i+1)*(j+2)-rank;
+      if (rank==1) printf("b[%i][%i]=%f\t",j,i,b[j][i]);
     }
-   // if (rank==1) printf("\n");
+    if (rank==1) printf("\n");
   }
   
   for (j=0; j < m; j++) {
-    fst_(b[j], &n, z, &nn);
+    //fst_(b[j], &n, z, &nn);
   }
 
-  transpose (bt,b,m,mglob,sendbuf,recbuf,sendcnt,sdispl);
+  transpose (bt,b,m,mglob,sendbuf,recbuf,sendcnt,sdispl,rank);
 
   // for (i=0; i < m; i++) {
   //  fstinv_(bt[i], &n, z, &nn);
@@ -141,22 +141,37 @@ main(int argc, char **argv )
   // printf (" umax = %e \n",umax);
 
   MPI_Finalize();
+  return 0;
 }
 
 void transpose (Real **bt, Real **b, int m, int mglob, Real *sendbuf,
-  Real *recbuf,int *sendcnt, int *sdispl)
+  Real *recbuf,int *sendcnt, int *sdispl,int rank)
 {
   for (int j=0; j < mglob; j++) {
     for (int i=0; i < m; i++) {
-      int ind=j+1;
+      int ind=j*m+i;
       sendbuf[ind]=b[j][i];
-      //printf("%f\t",sendbuf[ind]);
+      if (rank==1) printf("%2.1f  ",sendbuf[ind]);
     }
   }
-  //printf("\n");
+  if (rank==1) printf("\n\n");
+
   MPI_Alltoallv(sendbuf, sendcnt, sdispl,MPI_DOUBLE,
      recbuf, sendcnt, sdispl,MPI_DOUBLE,MPI_COMM_WORLD);
+  
+  for (int i=0;i<m*mglob;i++) {
+    if (rank==1) printf("%2.1f  ",recbuf[i]);
+  }
+  if (rank==1) printf("\n\n");
 
+  for (int j=0; j < mglob; j++) {
+    for (int i=0; i < m; i++) {
+      int ind=j*m+i;
+      bt[j][i]=recbuf[ind];
+      if (rank==1) printf("%2.1f  ",bt[j][i]);
+    }
+    if (rank==1) printf("\n");
+  }
 
 }
 
@@ -208,3 +223,10 @@ void splitVector(int globLen, int size, int** len, int** displ)
       (*displ)[i+1] = (*displ)[i]+(*len)[i];
   }
 }
+
+  // for (i=0; i < m; i++) {
+  //   diag[i] = 2.*(1.-cos((i+1+ofs[rank])*pi/(Real)n));
+  //   //diag[i]=i+ofs[rank];
+  //   //printf("diag[%i]=%i\n",rank,i+ofs[rank]); 
+  //   printf("%2.4f\n",diag[i]);
+  // }
