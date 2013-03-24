@@ -34,7 +34,7 @@ main(int argc, char **argv )
   /* the total number of degrees-of-freedom in each spatial direction is (n-1) */
   /* this version requires n to be a power of 2 */
 
-  if( argc < 2 ) {
+ if( argc < 2 ) {
     printf("need a problem size\n");
 	return;
   }
@@ -56,13 +56,13 @@ main(int argc, char **argv )
   }
   for (j=0; j < m; j++) {
     for (i=0; i < m; i++) {
-      b[j][i] = i*j;
+      b[j][i] = h*h;
     }
   }
   for (j=0; j < m; j++) {
     fst_(b[j], &n, z, &nn);
   }
-  
+
   transpose (bt,b,m);
 
   for (i=0; i < m; i++) {
@@ -77,9 +77,8 @@ main(int argc, char **argv )
   
   for (i=0; i < m; i++) {
     fst_(bt[i], &n, z, &nn);
-    
   }
-  
+
   transpose (b,bt,m);
 
   for (j=0; j < m; j++) {
