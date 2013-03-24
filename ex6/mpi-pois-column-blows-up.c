@@ -41,7 +41,7 @@ int main(int argc, char **argv )
   MPI_Comm_rank (MPI_COMM_WORLD, &rank);
 
 
-  Real *diag, **b, **bt, **z, *sendbuf, *recbuf;
+  Real *diag, **b, **bt, *z, *sendbuf, *recbuf;
   Real pi, h, umax;
   int i, j, n, m, nn;
   Real umaxglob=0;
@@ -74,14 +74,14 @@ int main(int argc, char **argv )
   //printf("%i\n",size);
   //printf("%i,%i\n",rank,m);
   
-  int gmt = omp_get_max_threads();
-  if (rank==0) printf("gmt=%i\n",gmt);
+  //int gmt = omp_get_max_threads();
+  //printf("gmt=%i\n",gmt);
 
 
   diag = createRealArray (mglob);
-  b    = createReal2DArray (m,mglob);
-  bt   = createReal2DArray (m,mglob);
-  z    = createReal2DArray (gmt,nn);
+  b    = createReal2DArray (mglob,m);
+  bt   = createReal2DArray (mglob,m);
+  z    = createReal2DArray (nn);
   sendbuf = createRealArray (localdof);
   recbuf  = createRealArray (localdof);
   sendcnt = createIntArray (size);
@@ -103,64 +103,60 @@ int main(int argc, char **argv )
   h    = 1./(Real)n;
   pi   = 4.*atan(1.);
 
-  Real startTime=MPI_Wtime();
-
   for (i=0; i < mglob; i++) {
     diag[i] = 2.*(1.-cos((i+1)*pi/(Real)n));
   }
-  for (j=0; j < m; j++) {
-    for (i=0; i < mglob; i++) {
+  for (j=0; j < mglob; j++) {
+    for (i=0; i < m; i++) {
       b[j][i] = h*h;
-      //b[j][i] = (i+1)*(j+2+ofs[rank]);
-      //if (rank==2) printf("b[%i][%i]=%2.1f\t",j,i,b[j][i]);
+      //b[j][i] = (i+1+ofs[rank])*(j+2);
+      //if (rank==0) printf("b[%i][%i]=%2.1f\t",j,i,b[j][i]);
     }
-    //if (rank==2) printf("\n");
+    //if (rank==0) printf("\n");
   }
   
-  #pragma omp parallel for schedule(static)
+  //#pragma omp parallel for schedule(static)
   for (j=0; j < m; j++) {
-    fst_(b[j], &n, z[omp_get_thread_num()], &nn);
+    fst_(b[j], &n, z, &nn);
   }
 
   transpose (bt,b,m,mglob,sendbuf,recbuf,sendcnt,sdispl,rank, cols, size);
 
   //#pragma omp parallel for schedule(static)
   for (i=0; i < m; i++) {
-   fstinv_(bt[i], &n, z[omp_get_thread_num()], &nn);
+   fstinv_(bt[i], &n, z, &nn);
   }
   
-  for (j=0; j < m; j++) {
-   for (i=0; i < mglob; i++) {
+  for (j=0; j < mglob; j++) {
+   for (i=0; i < m; i++) {
      bt[j][i] = bt[j][i]/(diag[i]+diag[j]);
     }
   }
   
-  #pragma omp parallel for schedule(static)
+  //#pragma omp parallel for schedule(static)
   for (i=0; i < m; i++) {
-    fst_(bt[i], &n, z[omp_get_thread_num()], &nn);
+    fst_(bt[i], &n, z, &nn);
   }
 
   transpose (bt,b,m,mglob,sendbuf,recbuf,sendcnt,sdispl,rank, cols, size);
 
-  #pragma omp parallel for schedule(static)
+  //#pragma omp parallel for schedule(static)
   for (j=0; j < m; j++) {
-    fstinv_(b[j], &n, z[omp_get_thread_num()], &nn);
+    fstinv_(b[j], &n, z, &nn);
   }
 
   umax = 0.0;
-  for (j=0; j < m; j++) {
-    for (i=0; i < mglob; i++) {
+  for (j=0; j < mglob; j++) {
+    for (i=0; i < m; i++) {
       if (b[j][i] > umax) umax = b[j][i];
     }
   }
 
   MPI_Reduce (&umax, &umaxglob, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
 
-  Real endTime=MPI_Wtime();
   //printf (" umax = %e \n",umax);
 
-  if (rank==0) printf("umaxglob = %e \n",umaxglob);
-  if (rank==0) printf("WallTime = %e \n",endTime-startTime);
+  if (rank==0) printf (" umaxglob = %e \n",umaxglob);
 
   MPI_Finalize();
   return 0;
@@ -169,46 +165,39 @@ int main(int argc, char **argv )
 void transpose (Real **bt, Real **b, int m, int mglob, Real *sendbuf,
   Real *recbuf,int *sendcnt, int *sdispl,int rank, int *cols, int size)
 {
-  int out=0;
   int ind=0;
-  for (int i=0; i < mglob; i++) {
-    for (int j=0; j < m; j++) {
-      sendbuf[ind]=b[j][i];
-      //if (rank==out) printf("%2.f  ",sendbuf[ind]);
-      ind++;
-    }
-  }
-  //if (rank==out) printf("\n\n");
-
-   MPI_Alltoallv(sendbuf, sendcnt, sdispl,MPI_DOUBLE,
-      recbuf, sendcnt, sdispl,MPI_DOUBLE,MPI_COMM_WORLD);
-  
-  // for (int i=0;i<m*mglob;i++) {
-  //   if (rank==out) printf("%2.f  ",recbuf[i]);
-  // }
-  // if (rank==out) printf("\n\n");
-
-
-  ind=0;
-  int ioff=0;
+  int joff=0;
   for (int p=0; p<size; p++){
-    for (int j=0; j < m; j++) {
-      for (int i=0; i < cols[p]; i++) {
-        //if (rank==out) printf("%i, %i, %2.1f\n",j+joff,i,b[j+joff][i]);
-        bt[j][i+ioff]=recbuf[ind];
-        //if (rank==out) printf("%i\n",ind);
+    for (int i=0; i < m; i++) {
+      for (int j=0; j < cols[p]; j++) {
+        //if (rank==1) printf("%i, %i, %2.1f\n",j+joff,i,b[j+joff][i]);
+        sendbuf[ind]=b[j+joff][i];
+        //if (rank==1) printf("%i\n",ind);
+        //if (rank==1) printf("%2.1f  ",sendbuf[ind]);
         ind++;
       }
     }
-    ioff=ioff+cols[p];
-    //if (rank==out) printf("%i\n",joff);
+    joff=joff+cols[p];
+    //if (rank==1) printf("%i\n",joff);
   }
-  // for (int j=0; j < m; j++) {
-  //   for (int i=0; i < mglob; i++) {
-  //     if (rank==out) printf("%2.f\t",bt[j][i]);
-  //   }
-  //   if (rank==out) printf("\n");
+  //if (rank==1) printf("\n\n");
+
+  MPI_Alltoallv(sendbuf, sendcnt, sdispl,MPI_DOUBLE,
+     recbuf, sendcnt, sdispl,MPI_DOUBLE,MPI_COMM_WORLD);
+  
+  // for (int i=0;i<m*mglob;i++) {
+  //   if (rank==1) printf("%2.1f  ",recbuf[i]);
   // }
+  // if (rank==1) printf("\n\n");
+
+  for (int j=0; j < mglob; j++) {
+    for (int i=0; i < m; i++) {
+      int ind=j*m+i;
+      bt[j][i]=recbuf[ind];
+      //if (rank==0) printf("%2.f  ",bt[j][i]);
+    }
+    //if (rank==0) printf("\n");
+  }
 
 }
 
