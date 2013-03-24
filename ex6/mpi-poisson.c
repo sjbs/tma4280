@@ -45,6 +45,7 @@ int main(int argc, char **argv )
   Real *diag, **b, **bt, *z, *sendbuf, *recbuf;
   Real pi, h, umax;
   int i, j, n, m, nn;
+  Real umaxglob=0;
 
   /* the total number of grid points in each spatial direction is (n+1) */
   /* the total number of degrees-of-freedom in each spatial direction is (n-1) */
@@ -105,10 +106,11 @@ int main(int argc, char **argv )
   }
   for (j=0; j < mglob; j++) {
     for (i=0; i < m; i++) {
-      b[j][i] = (i+1+ofs[rank])*(j+2);
-      if (rank==0) printf("b[%i][%i]=%2.1f\t",j,i,b[j][i]);
+      b[j][i] = h*h;
+      //b[j][i] = (i+1+ofs[rank])*(j+2);
+      //if (rank==0) printf("b[%i][%i]=%2.1f\t",j,i,b[j][i]);
     }
-    if (rank==0) printf("\n");
+    //if (rank==0) printf("\n");
   }
   
   for (j=0; j < m; j++) {
@@ -143,7 +145,12 @@ int main(int argc, char **argv )
       if (b[j][i] > umax) umax = b[j][i];
     }
   }
-  printf (" umax = %e \n",umax);
+
+  MPI_Reduce (&umax, &umaxglob, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
+
+  //printf (" umax = %e \n",umax);
+
+  if (rank==0) printf (" umaxglob = %e \n",umaxglob);
 
   MPI_Finalize();
   return 0;
@@ -181,9 +188,9 @@ void transpose (Real **bt, Real **b, int m, int mglob, Real *sendbuf,
     for (int i=0; i < m; i++) {
       int ind=j*m+i;
       bt[j][i]=recbuf[ind];
-      if (rank==0) printf("%2.f  ",bt[j][i]);
+      //if (rank==0) printf("%2.f  ",bt[j][i]);
     }
-    if (rank==0) printf("\n");
+    //if (rank==0) printf("\n");
   }
 
 }
