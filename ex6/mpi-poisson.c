@@ -74,8 +74,8 @@ int main(int argc, char **argv )
   //printf("%i\n",size);
   //printf("%i,%i\n",rank,m);
   
-  //int gmt = omp_get_max_threads();
-  //printf("gmt=%i\n",gmt);
+  int gmt = omp_get_max_threads();
+  printf("gmt=%i\n",gmt);
 
 
   diag = createRealArray (mglob);
