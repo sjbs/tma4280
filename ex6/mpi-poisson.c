@@ -19,7 +19,6 @@
 #include <mpi.h>
 #include <omp.h>
 
-#include "common.h"
 
 typedef double Real;
 
@@ -74,6 +73,9 @@ int main(int argc, char **argv )
   //printf("%i\n",ofs[rank]);
   //printf("%i\n",size);
   //printf("%i,%i\n",rank,m);
+  
+  int threads = omp_get_max_threads();
+  //printf("gmt=%i\n",gmt);
 
 
   diag = createRealArray (mglob);
@@ -113,12 +115,14 @@ int main(int argc, char **argv )
     //if (rank==0) printf("\n");
   }
   
+  #pragma omp parallel for schedule(static)
   for (j=0; j < m; j++) {
     fst_(b[j], &n, z, &nn);
   }
 
   transpose (bt,b,m,mglob,sendbuf,recbuf,sendcnt,sdispl,rank, cols, size);
 
+  #pragma omp parallel for schedule(static)
   for (i=0; i < m; i++) {
    fstinv_(bt[i], &n, z, &nn);
   }
@@ -129,12 +133,14 @@ int main(int argc, char **argv )
     }
   }
   
+  #pragma omp parallel for schedule(static)
   for (i=0; i < m; i++) {
     fst_(bt[i], &n, z, &nn);
   }
 
   transpose (bt,b,m,mglob,sendbuf,recbuf,sendcnt,sdispl,rank, cols, size);
 
+  #pragma omp parallel for schedule(static)
   for (j=0; j < m; j++) {
     fstinv_(b[j], &n, z, &nn);
   }
@@ -250,34 +256,3 @@ void splitVector(int globLen, int size, int** len, int** displ)
   //   //printf("diag[%i]=%i\n",rank,i+ofs[rank]); 
   //   printf("%2.4f\n",diag[i]);
   // }
-Matrix createMatrix(int n1, int n2)
-{
-  int i;
-  Matrix result = (Matrix)calloc(1, sizeof(matrix_t));
-  result->rows = n1;
-  result->cols = n2;
-  result->data = (double **)calloc(n2   ,sizeof(double *));
-  result->data[0] = (double  *)calloc(n1*n2,sizeof(double));
-  for (i=1; i < n2; i++)
-    result->data[i] = result->data[i-1] + n1;
-  result->as_vec = (Vector)malloc(sizeof(vector_t));
-  result->as_vec->data = result->data[0];
-  result->as_vec->len = result->as_vec->globLen = n1*n2;
-  result->as_vec->stride = 1;
-  result->col = malloc(n2*sizeof(Vector));
-  for (int i=0;i<n2;++i) {
-    result->col[i] = malloc(sizeof(vector_t));
-    result->col[i]->len = n1;
-    result->col[i]->data = result->data[i];
-    result->col[i]->stride = 1;
-  }
-  result->row = malloc(n1*sizeof(Vector));
-  for (int i=0;i<n1;++i) {
-    result->row[i] = malloc(sizeof(vector_t));
-    result->row[i]->len = n2;
-    result->row[i]->data = result->data[0]+i;
-    result->row[i]->stride = n1;
-  }
-
-  return result;
-}
