@@ -74,7 +74,7 @@ int main(int argc, char **argv )
   //printf("%i\n",size);
   //printf("%i,%i\n",rank,m);
   
-  int threads = omp_get_max_threads();
+  //int gmt = omp_get_max_threads();
   //printf("gmt=%i\n",gmt);
 
 
@@ -115,14 +115,14 @@ int main(int argc, char **argv )
     //if (rank==0) printf("\n");
   }
   
-  #pragma omp parallel for schedule(static)
+  //#pragma omp parallel for schedule(static)
   for (j=0; j < m; j++) {
     fst_(b[j], &n, z, &nn);
   }
 
   transpose (bt,b,m,mglob,sendbuf,recbuf,sendcnt,sdispl,rank, cols, size);
 
-  #pragma omp parallel for schedule(static)
+  //#pragma omp parallel for schedule(static)
   for (i=0; i < m; i++) {
    fstinv_(bt[i], &n, z, &nn);
   }
@@ -133,14 +133,14 @@ int main(int argc, char **argv )
     }
   }
   
-  #pragma omp parallel for schedule(static)
+  //#pragma omp parallel for schedule(static)
   for (i=0; i < m; i++) {
     fst_(bt[i], &n, z, &nn);
   }
 
   transpose (bt,b,m,mglob,sendbuf,recbuf,sendcnt,sdispl,rank, cols, size);
 
-  #pragma omp parallel for schedule(static)
+  //#pragma omp parallel for schedule(static)
   for (j=0; j < m; j++) {
     fstinv_(b[j], &n, z, &nn);
   }
