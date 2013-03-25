@@ -105,9 +105,11 @@ int main(int argc, char **argv )
 
   Real startTime=MPI_Wtime();
 
+  #pragma omp parallel for schedule(static)
   for (i=0; i < mglob; i++) {
     diag[i] = 2.*(1.-cos((i+1)*pi/(Real)n));
   }
+  #pragma omp parallel for schedule(static)
   for (j=0; j < m; j++) {
     for (i=0; i < mglob; i++) {
       b[j][i] = h*h;
@@ -124,11 +126,12 @@ int main(int argc, char **argv )
 
   transpose (bt,b,m,mglob,sendbuf,recbuf,sendcnt,sdispl,rank, cols, size);
 
-  //#pragma omp parallel for schedule(static)
+  #pragma omp parallel for schedule(static)
   for (i=0; i < m; i++) {
    fstinv_(bt[i], &n, z[omp_get_thread_num()], &nn);
   }
-  
+
+  #pragma omp parallel for schedule(static)
   for (j=0; j < m; j++) {
    for (i=0; i < mglob; i++) {
      bt[j][i] = bt[j][i]/(diag[i]+diag[j]);
@@ -187,7 +190,6 @@ void transpose (Real **bt, Real **b, int m, int mglob, Real *sendbuf,
   //   if (rank==out) printf("%2.f  ",recbuf[i]);
   // }
   // if (rank==out) printf("\n\n");
-
 
   ind=0;
   int ioff=0;
