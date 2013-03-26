@@ -109,15 +109,25 @@ int main(int argc, char **argv )
   for (i=0; i < mglob; i++) {
     diag[i] = 2.*(1.-cos((i+1)*pi/(Real)n));
   }
+
   #pragma omp parallel for schedule(static)
   for (j=0; j < m; j++) {
     for (i=0; i < mglob; i++) {
       b[j][i] = h*h;
       //b[j][i] = (i+1)*(j+2+ofs[rank]);
-      //if (rank==2) printf("b[%i][%i]=%2.1f\t",j,i,b[j][i]);
+      //if (rank==0) printf("b[%i][%i]=%2.1f\t",j,i,b[j][i]);
     }
-    //if (rank==2) printf("\n");
+    //if (rank==0) printf("\n");
   }
+
+  // for (j=0; j < m; j++) {
+  //   for (i=0; i < mglob; i++) {
+  //     //b[j][i] = h*h;
+  //     //b[j][i] = (i+1)*(j+2+ofs[rank]);
+  //     if (rank==0) printf("b[%i][%i]=%2.1f\t",j,i,b[j][i]);
+  //   }
+  //   if (rank==0) printf("\n");
+  // }
   
   #pragma omp parallel for schedule(static)
   for (j=0; j < m; j++) {
