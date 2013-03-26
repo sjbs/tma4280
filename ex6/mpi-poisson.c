@@ -113,8 +113,8 @@ int main(int argc, char **argv )
   #pragma omp parallel for schedule(static)
   for (j=0; j < m; j++) {
     for (i=0; i < mglob; i++) {
-      b[j][i] = h*h;
-      //b[j][i] = (i+1)*(j+2+ofs[rank]);
+      //b[j][i] = h*h;
+      b[j][i] = (i+1)*(j+2+ofs[rank]);
       //if (rank==0) printf("b[%i][%i]=%2.1f\t",j,i,b[j][i]);
     }
     //if (rank==0) printf("\n");
@@ -129,51 +129,51 @@ int main(int argc, char **argv )
   //   if (rank==0) printf("\n");
   // }
   
-  #pragma omp parallel for schedule(static)
-  for (j=0; j < m; j++) {
-    fst_(b[j], &n, z[omp_get_thread_num()], &nn);
-  }
+  // #pragma omp parallel for schedule(static)
+  // for (j=0; j < m; j++) {
+  //   fst_(b[j], &n, z[omp_get_thread_num()], &nn);
+  // }
 
   transpose (bt,b,m,mglob,sendbuf,recbuf,sendcnt,sdispl,rank, cols, size);
 
-  #pragma omp parallel for schedule(static)
-  for (i=0; i < m; i++) {
-   fstinv_(bt[i], &n, z[omp_get_thread_num()], &nn);
-  }
+  // #pragma omp parallel for schedule(static)
+  // for (i=0; i < m; i++) {
+  //  fstinv_(bt[i], &n, z[omp_get_thread_num()], &nn);
+  // }
 
-  #pragma omp parallel for schedule(static)
-  for (j=0; j < m; j++) {
-   for (i=0; i < mglob; i++) {
-     bt[j][i] = bt[j][i]/(diag[i]+diag[j]);
-    }
-  }
+  // #pragma omp parallel for schedule(static)
+  // for (j=0; j < m; j++) {
+  //  for (i=0; i < mglob; i++) {
+  //    bt[j][i] = bt[j][i]/(diag[i]+diag[j]);
+  //   }
+  // }
   
-  #pragma omp parallel for schedule(static)
-  for (i=0; i < m; i++) {
-    fst_(bt[i], &n, z[omp_get_thread_num()], &nn);
-  }
+  // #pragma omp parallel for schedule(static)
+  // for (i=0; i < m; i++) {
+  //   fst_(bt[i], &n, z[omp_get_thread_num()], &nn);
+  // }
 
-  transpose (bt,b,m,mglob,sendbuf,recbuf,sendcnt,sdispl,rank, cols, size);
+  // transpose (bt,b,m,mglob,sendbuf,recbuf,sendcnt,sdispl,rank, cols, size);
 
-  #pragma omp parallel for schedule(static)
-  for (j=0; j < m; j++) {
-    fstinv_(b[j], &n, z[omp_get_thread_num()], &nn);
-  }
+  // #pragma omp parallel for schedule(static)
+  // for (j=0; j < m; j++) {
+  //   fstinv_(b[j], &n, z[omp_get_thread_num()], &nn);
+  // }
 
-  umax = 0.0;
-  for (j=0; j < m; j++) {
-    for (i=0; i < mglob; i++) {
-      if (b[j][i] > umax) umax = b[j][i];
-    }
-  }
+  // umax = 0.0;
+  // for (j=0; j < m; j++) {
+  //   for (i=0; i < mglob; i++) {
+  //     if (b[j][i] > umax) umax = b[j][i];
+  //   }
+  // }
 
-  MPI_Reduce (&umax, &umaxglob, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
+  // MPI_Reduce (&umax, &umaxglob, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
 
-  Real endTime=MPI_Wtime();
-  //printf (" umax = %e \n",umax);
+  // Real endTime=MPI_Wtime();
+  // //printf (" umax = %e \n",umax);
 
-  if (rank==0) printf("umaxglob = %e \n",umaxglob);
-  if (rank==0) printf("WallTime = %e \n",endTime-startTime);
+  // if (rank==0) printf("umaxglob = %e \n",umaxglob);
+  // if (rank==0) printf("WallTime = %e \n",endTime-startTime);
 
   MPI_Finalize();
   return 0;
@@ -183,15 +183,24 @@ void transpose (Real **bt, Real **b, int m, int mglob, Real *sendbuf,
   Real *recbuf,int *sendcnt, int *sdispl,int rank, int *cols, int size)
 {
   int out=0;
-  int ind=0;
+  //note that if mglob<maxnumthreads (i<gmt), threads over gmt will be idle
+  #pragma omp parallel for schedule(static)
   for (int i=0; i < mglob; i++) {
     for (int j=0; j < m; j++) {
-      sendbuf[ind]=b[j][i];
-      //if (rank==out) printf("%2.f  ",sendbuf[ind]);
-      ind++;
+      sendbuf[j+i*m]=b[j][i];
+      if (rank==out) printf("%2.f  ",sendbuf[j+i*m]);
     }
   }
-  //if (rank==out) printf("\n\n");
+  if (rank==out) printf("\n\n");
+
+  int ind=0;  
+  for (int i=0; i < mglob; i++) {
+    for (int j=0; j < m; j++) {
+      if (rank==out) printf("%2.f  ",sendbuf[ind]);
+      ind++;
+      }
+  }
+  if (rank==out) printf("\n");
 
    MPI_Alltoallv(sendbuf, sendcnt, sdispl,MPI_DOUBLE,
       recbuf, sendcnt, sdispl,MPI_DOUBLE,MPI_COMM_WORLD);
