@@ -19,6 +19,11 @@
 #include <mpi.h>
 #include <omp.h>
 
+#ifndef HAVE_MKL
+#define fst fst_
+#define fstinv fstinv_
+#endif
+
 
 typedef double Real;
 
