@@ -221,9 +221,10 @@ void transpose (Real **bt, Real **b, int m, int mglob, Real *sendbuf,
  
   //int ioff=0;
   //ind=0;
-  #pragma omp parallel for schedule(static)
+ 
   for (int p=0; p<size; p++){
     //if (rank==out) printf("cols[%i]=%i\n",p,cols[p]);
+    #pragma omp parallel for schedule(static)
     for (int j=0; j < m; j++) {
       for (int i=0; i < cols[p]; i++) {
         bt[j][i+ofs[p]]=recbuf[j*m+i+ofs[p]*m];
