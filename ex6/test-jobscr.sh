@@ -8,7 +8,7 @@
 #PBS -q optimist
 #PBS -j oe
 
-cd /home/spence/tmacode-checkout/ex4/release
+cd /home/spence/tmacode-checkout/ex6/release
 
 module load intelcomp
 module load openmpi/1.4.3-intel
