@@ -1,0 +1,45 @@
+testrun serial:
+n=64
+gmt=1
+P*t = 1 * 1 = 1 
+umax = 2.441406e-04 
+WallTime = 0.005395s 
+n=256
+gmt=1
+P*t = 1 * 1 = 1 
+umax = 1.525879e-05 
+WallTime = 0.108466s 
+n=512
+gmt=1
+P*t = 1 * 1 = 1 
+umax = 3.814697e-06 
+WallTime = 0.484052s 
+n=2048
+gmt=1
+P*t = 1 * 1 = 1 
+umax = 2.384186e-07 
+WallTime = 9.483637s 
+n=4096
+gmt=1
+P*t = 1 * 1 = 1 
+umax = 5.960464e-08 
+WallTime = 42.603272s 
+n=8192
+gmt=1
+P*t = 1 * 1 = 1 
+umax = 1.490116e-08 
+WallTime = 184.294727s 
+n=16384
+gmt=1
+P*t = 1 * 1 = 1 
+umax = 3.725290e-09 
+WallTime = 786.113018s 
+n=32768
+gmt=1
+[compute-0-14:11371] *** Process received signal ***
+[compute-0-14:11371] Signal: Segmentation fault (11)
+[compute-0-14:11371] Signal code: Address not mapped (1)
+[compute-0-14:11371] Failing at address: 0x1d92b1e8
+--------------------------------------------------------------------------
+mpirun noticed that process rank 0 with PID 11371 on node compute-0-14.local exited on signal 11 (Segmentation fault).
+--------------------------------------------------------------------------
