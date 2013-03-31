@@ -1,0 +1,15 @@
+testrun 2 nodes hybrid 1:
+gmt=1
+P*t = 4 * 1 = 4 
+umax = 5.960464e-08 
+WallTime = 11.145878s 
+testrun 2 nodes hybrid 3:
+gmt=3
+P*t = 4 * 3 = 12 
+umax = 5.960464e-08 
+WallTime = 4.196539s 
+testrun 2 nodes hybrid 6:
+gmt=6
+P*t = 4 * 6 = 24 
+umax = 5.960464e-08 
+WallTime = 2.472618s 

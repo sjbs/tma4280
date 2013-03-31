@@ -1,0 +1,25 @@
+testrun mpi 1:
+gmt=1
+P*t = 1 * 1 = 1 
+umax = 5.960464e-08 
+WallTime = 42.122416s 
+testrun mpi 12:
+gmt=1
+P*t = 12 * 1 = 12 
+umax = 5.960464e-08 
+WallTime = 3.587713s 
+testrun omp 12:
+gmt=12
+P*t = 1 * 12 = 12 
+umax = 5.960464e-08 
+WallTime = 3.776918s 
+testrun mixed p=2,t=6:
+gmt=6
+P*t = 2 * 6 = 12 
+umax = 5.960464e-08 
+WallTime = 3.667448s 
+testrun mixed p=6,t=2:
+gmt=2
+P*t = 6 * 2 = 12 
+umax = 5.960464e-08 
+WallTime = 3.604253s 
