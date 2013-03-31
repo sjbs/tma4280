@@ -2,7 +2,11 @@
 
 #PBS -N test
 #PBS -lnodes=1:ppn=12:default
+<<<<<<< HEAD
 #PBS -lwalltime=00:10:00
+=======
+#PBS -lwalltime=00:01:00
+>>>>>>> e9142623eb273eb4cf41c55dc7d55e0cb5bd3671
 #PBS -lpmem=2000MB
 #PBS -A freecycle
 #PBS -q optimist
