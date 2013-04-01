@@ -1,0 +1,36 @@
+nn=1:
+n=64
+gmt=1
+P*t = 12 * 1 = 12 
+umax = 2.441406e-04 
+WallTime = 0.020866s 
+n=256
+gmt=1
+P*t = 12 * 1 = 12 
+umax = 1.525879e-05 
+WallTime = 0.009608s 
+n=512
+gmt=1
+P*t = 12 * 1 = 12 
+umax = 3.814697e-06 
+WallTime = 0.053541s 
+n=2048
+gmt=1
+P*t = 12 * 1 = 12 
+umax = 2.384186e-07 
+WallTime = 0.834676s 
+n=4096
+gmt=1
+P*t = 12 * 1 = 12 
+umax = 5.960464e-08 
+WallTime = 3.581253s 
+n=8192
+gmt=1
+P*t = 12 * 1 = 12 
+umax = 1.490116e-08 
+WallTime = 15.348233s 
+n=16384
+gmt=1
+P*t = 12 * 1 = 12 
+umax = 3.725290e-09 
+WallTime = 65.837607s 

@@ -1,9 +1,8 @@
 #!/bin/bash
 
-#PBS -N test
+#PBS -N pnntest
 #PBS -lnodes=1:ppn=12:default
-#PBS -lwalltime=00:10:00
-#PBS -lwalltime=00:01:00
+#PBS -lwalltime=00:05:00
 #PBS -lpmem=2000MB
 #PBS -A freecycle
 #PBS -q optimist
@@ -15,20 +14,16 @@ module load intelcomp
 module load openmpi/1.4.3-intel
 module load cmake
 KMP_AFFINITY="granularity=fine, compact"
-echo "testrun mpi 1:"
-export OMP_NUM_THREADS=1
-mpirun -np 1 mpi-poisson 4096
 echo "testrun mpi 12:"
-mpirun -np 12 mpi-poisson 4096
-echo "testrun omp 12:"
-export OMP_NUM_THREADS=12
-mpirun -np 1 mpi-poisson 4096
-echo "testrun mixed p=2,t=6:"
-export OMP_NUM_THREADS=6
-mpirun -np 2 mpi-poisson 4096
-echo "testrun mixed p=6,t=2:"
+export OMP_NUM_THREADS=1
+mpirun -hostfile $PBS_NODEFILE ./mpi-poisson 4096
+
+#PBS -lnodes=1:ppn=6:default
+echo "testrun mpi 6:"
+export OMP_NUM_THREADS=1
+mpirun -hostfile $PBS_NODEFILE ./mpi-poisson 4096
+
+#PBS -lnodes=1:ppn=6:default
+echo "testrun omp 2:"
 export OMP_NUM_THREADS=2
-mpirun -np 6 mpi-poisson 4096
-
-
-
+mpirun -hostfile $PBS_NODEFILE ./mpi-poisson 4096

@@ -1,0 +1,38 @@
+Warning: Permanently added 'compute-0-32' (RSA) to the list of known hosts.
+chown: cannot access `/state/partition1/scratch/pbstmp.248391.rocks.hpc.ntnu.no': No such file or directory
+nn=3:
+n=64
+gmt=1
+P*t = 36 * 1 = 36 
+umax = 2.441406e-04 
+WallTime = 0.024168s 
+n=256
+gmt=1
+P*t = 36 * 1 = 36 
+umax = 1.525879e-05 
+WallTime = 0.217033s 
+n=512
+gmt=1
+P*t = 36 * 1 = 36 
+umax = 3.814697e-06 
+WallTime = 0.228095s 
+n=2048
+gmt=1
+P*t = 36 * 1 = 36 
+umax = 2.384186e-07 
+WallTime = 0.800953s 
+n=4096
+gmt=1
+P*t = 36 * 1 = 36 
+umax = 5.960464e-08 
+WallTime = 2.346044s 
+n=8192
+gmt=1
+P*t = 36 * 1 = 36 
+umax = 1.490116e-08 
+WallTime = 9.434100s 
+n=16384
+gmt=1
+P*t = 36 * 1 = 36 
+umax = 3.725290e-09 
+WallTime = 31.989062s 
