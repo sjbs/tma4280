@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #PBS -N partb_nn_2
-#PBS -lnodes=3:ppn=12:default
+#PBS -lnodes=2:ppn=12:default
 #PBS -lwalltime=00:40:00
 #PBS -lpmem=2000MB
 #PBS -A freecycle

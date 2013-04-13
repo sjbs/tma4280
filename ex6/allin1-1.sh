@@ -1,7 +1,7 @@
 #!/bin/bash
 
-#PBS -N partb_nn_2
-#PBS -lnodes=3:ppn=12:default
+#PBS -N partb_nn_1
+#PBS -lnodes=1:ppn=12:default
 #PBS -lwalltime=00:40:00
 #PBS -lpmem=2000MB
 #PBS -A freecycle
@@ -17,7 +17,7 @@ KMP_AFFINITY="granularity=fine, compact"
 
 cat $PBS_NODEFILE
 echo "   "
-echo "nn=2"
+echo "nn=1"
 for npern in 1 2 6 12
 do
 	for t in 1 2 6 12

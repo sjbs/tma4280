@@ -1,0 +1,35 @@
+n=64
+serial:
+ n=64
+ Wtime=0.005239 
+ umax = 7.365719e-02 
+n=256
+serial:
+ n=256
+ Wtime=0.106914 
+ umax = 7.367047e-02 
+n=512
+serial:
+ n=512
+ Wtime=0.476095 
+ umax = 7.367113e-02 
+n=2048
+serial:
+ n=2048
+ Wtime=9.316244 
+ umax = 7.367134e-02 
+n=4096
+serial:
+ n=4096
+ Wtime=41.458507 
+ umax = 7.367135e-02 
+n=8192
+serial:
+ n=8192
+ Wtime=178.235140 
+ umax = 7.367135e-02 
+n=16384
+serial:
+ n=16384
+ Wtime=763.935333 
+ umax = 7.367135e-02 
