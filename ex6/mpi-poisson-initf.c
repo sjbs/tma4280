@@ -36,7 +36,6 @@ void transpose (Real **bt, Real **b, int m, int mglob, Real *sendbuf,
 void fst_(Real *v, int *n, Real *w, int *nn);
 void fstinv_(Real *v, int *n, Real *w, int *nn);
 void splitVector(int globLen, int size, int** len, int** displ);
-int initfunc(int i);
 
 int main(int argc, char **argv )
 {
@@ -295,10 +294,4 @@ void splitVector(int globLen, int size, int** len, int** displ)
       (*displ)[i+1] = (*displ)[i]+(*len)[i];
   }
 }
-
-int initfunc(int i)
-{
-  return (fmod(i,2));
-}
-
 

@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <memory.h>
 #include <math.h>
+#include <sys/time.h>
 
 typedef double Real;
 
@@ -24,11 +25,12 @@ void fst_(Real *v, int *n, Real *w, int *nn);
 void fstinv_(Real *v, int *n, Real *w, int *nn);
 
 
-main(int argc, char **argv )
+int main(int argc, char **argv )
 {
   Real *diag, **b, **bt, *z;
   Real pi, h, umax;
   int i, j, n, m, nn;
+  struct timeval tmpTime;
 
   /* the total number of grid points in each spatial direction is (n+1) */
   /* the total number of degrees-of-freedom in each spatial direction is (n-1) */
@@ -36,7 +38,7 @@ main(int argc, char **argv )
 
  if( argc < 2 ) {
     printf("need a problem size\n");
-	return;
+	return (0);
   }
 
   n  = atoi(argv[1]);
@@ -50,6 +52,9 @@ main(int argc, char **argv )
 
   h    = 1./(Real)n;
   pi   = 4.*atan(1.);
+
+  gettimeofday(&tmpTime,NULL);
+  Real tstart = tmpTime.tv_sec + tmpTime.tv_usec/1.0e6;
 
   for (i=0; i < m; i++) {
     diag[i] = 2.*(1.-cos((i+1)*pi/(Real)n));
@@ -91,6 +96,11 @@ main(int argc, char **argv )
       if (b[j][i] > umax) umax = b[j][i];
     }
   }
+  gettimeofday(&tmpTime,NULL);
+  Real tend = tmpTime.tv_sec + tmpTime.tv_usec/1.0e6;
+
+  printf (" n=%i\n",n);
+  printf (" Wtime=%f \n",tend-tstart);
   printf (" umax = %e \n",umax);
 }
 
@@ -128,3 +138,4 @@ Real **createReal2DArray (int n1, int n2)
   memset(a[0],0,n*sizeof(Real));
   return (a);
 }
+
