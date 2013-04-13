@@ -123,7 +123,7 @@ int main(int argc, char **argv )
   #pragma omp parallel for schedule(static)
   for (j=0; j < m; j++) {
     for (i=0; i < mglob; i++) {
-      b[j][i] = h*h;
+      //b[j][i] = h*h;
       b[j][i] = h*h*initfunc(i);
       //b[j][i] = (i+1)*(j+2+ofs[rank]);
     }
