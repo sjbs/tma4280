@@ -59,5 +59,6 @@ ENDMACRO(ADD_APP)
 
 ADD_APP(poisson)
 ADD_APP(mpi-poisson)
+ADD_APP(mpi-poisson-initf)
 
 
