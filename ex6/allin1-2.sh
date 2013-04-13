@@ -18,9 +18,9 @@ KMP_AFFINITY="granularity=fine, compact"
 cat $PBS_NODEFILE
 echo "   "
 echo "nn=2"
-for npern in 1 2 6 12
+for npern in 1 2 3 6 12
 do
-	for t in 1 2 6 12
+	for t in 1 2 3 6 12
 	do
 		let "temp=$npern*$t"
 		if [ "$temp" -le "12" ]

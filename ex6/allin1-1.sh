@@ -2,7 +2,7 @@
 
 #PBS -N partb_nn_1
 #PBS -lnodes=1:ppn=12:default
-#PBS -lwalltime=00:40:00
+#PBS -lwalltime=03:00:00
 #PBS -lpmem=2000MB
 #PBS -A freecycle
 #PBS -q optimist
@@ -18,9 +18,9 @@ KMP_AFFINITY="granularity=fine, compact"
 cat $PBS_NODEFILE
 echo "   "
 echo "nn=1"
-for npern in 1 2 6 12
+for npern in 2 3 6 12
 do
-	for t in 1 2 6 12
+	for t in 1 2 3 6 12
 	do
 		let "temp=$npern*$t"
 		if [ "$temp" -le "12" ]
